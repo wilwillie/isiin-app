@@ -136,12 +136,12 @@ class RoomFitOrderWorkflowTest extends TestCase
             ->get(route('vendor.orders.index'))
             ->assertOk()
             ->assertSee('Dikonfirmasi, menunggu pembayaran')
-            ->assertDontSee('Foto ruangan');
+            ->assertSee('Foto ruangan');
         $this->actingAs($customer)
             ->get(route('orders.show', $order))
             ->assertOk()
             ->assertSee('Dikonfirmasi, menunggu pembayaran')
-            ->assertDontSee('Foto ruangan');
+            ->assertSee('Foto ruangan');
 
         $this->actingAs($customer)
             ->post(route('orders.pay', $order))

@@ -53,7 +53,7 @@
                 </ul>
             </div>
 
-            @if (in_array($order->status, ['pending', 'needs_info'], true) && $order->room_photos)
+            @if ($order->room_photos)
                 <div class="card p-5 sm:p-6">
                     <h2 class="section-heading">Foto ruangan</h2>
                     <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">

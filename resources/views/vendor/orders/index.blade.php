@@ -62,7 +62,7 @@
                     <p class="rounded-xl bg-emerald-50 px-3 py-2 sm:col-span-2"><span class="text-emerald-800/70">Pendapatan vendor:</span> <strong class="text-emerald-900">Rp {{ number_format($order->vendor_payout, 0, ',', '.') }}</strong></p>
                 </div>
 
-                @if (in_array($order->status, ['pending', 'needs_info'], true) && $order->room_photos)
+                @if ($order->room_photos)
                     <div class="mt-4">
                         <p class="text-sm font-semibold">Foto ruangan</p>
                         <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
