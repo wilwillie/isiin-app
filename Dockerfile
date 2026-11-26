@@ -20,6 +20,8 @@ FROM php:8.3-apache-bookworm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libcurl4-openssl-dev libonig-dev libpq-dev \
     && docker-php-ext-install -j"$(nproc)" curl mbstring pdo_pgsql \
+    && printf 'upload_max_filesize=6M\npost_max_size=24M\nmax_file_uploads=20\n' \
+        > /usr/local/etc/php/conf.d/uploads.ini \
     && a2enmod headers rewrite \
     && rm -rf /var/lib/apt/lists/*
 

@@ -84,7 +84,7 @@ Webhook memverifikasi signature, mata uang, dan nominal sebelum mengubah status 
 
 Aplikasi Laravel ini dijalankan sebagai container melalui [Vercel Container Runtime](https://vercel.com/docs/functions/runtimes/container). Root `Dockerfile` mengatur Apache sebagai web server. Pilih preset **Container** saat membuat project jika Vercel tidak mendeteksinya otomatis.
 
-Gunakan PostgreSQL terkelola untuk database (jangan SQLite pada filesystem Vercel), dan dua bucket Cloudflare R2: satu bucket publik untuk foto paket/portofolio dan satu bucket privat untuk foto pesanan/bukti sengketa. Aktifkan public URL hanya pada bucket publik. Berkas privat dibaca lewat route Laravel yang memeriksa autentikasi dan izin akses.
+Untuk demo tanpa layanan berbayar, satu project [Supabase Free](https://supabase.com/pricing) dapat menyediakan PostgreSQL dan Storage. Free project dapat dijeda setelah tidak aktif; batas yang tercantum saat ini adalah 500 MB database dan 1 GB file storage. Buat dua bucket Storage: `isiin-public` untuk foto paket/portofolio dan `isiin-private` untuk foto pesanan/bukti sengketa. Jadikan hanya bucket publik yang public. Berkas privat dibaca lewat route Laravel yang memeriksa autentikasi dan izin akses.
 
 Atur environment variables di Vercel:
 
@@ -95,7 +95,7 @@ APP_KEY=base64:<hasil php artisan key:generate --show>
 APP_URL=https://<domain-vercel>
 APP_DISPLAY_TIMEZONE=Asia/Jakarta
 DB_CONNECTION=pgsql
-DB_URL=<connection URL PostgreSQL>
+DB_URL=<pooled connection URL PostgreSQL dari Supabase>
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=sync
@@ -107,17 +107,19 @@ MIDTRANS_IS_PRODUCTION=false
 
 PUBLIC_FILESYSTEM_DRIVER=s3
 PRIVATE_FILESYSTEM_DRIVER=s3
-AWS_ACCESS_KEY_ID=<R2 access key>
-AWS_SECRET_ACCESS_KEY=<R2 secret key>
-AWS_DEFAULT_REGION=auto
-AWS_BUCKET=<nama bucket publik>
-AWS_PRIVATE_BUCKET=<nama bucket privat>
-AWS_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-AWS_URL=https://<public-bucket-url>
+AWS_ACCESS_KEY_ID=<Supabase S3 access key>
+AWS_SECRET_ACCESS_KEY=<Supabase S3 secret key>
+AWS_DEFAULT_REGION=<region project dari konfigurasi S3 Supabase>
+AWS_BUCKET=isiin-public
+AWS_PRIVATE_BUCKET=isiin-private
+AWS_ENDPOINT=https://<project-ref>.storage.supabase.co/storage/v1/s3
+AWS_URL=https://<project-ref>.supabase.co/storage/v1/object/public/isiin-public
 AWS_USE_PATH_STYLE_ENDPOINT=true
 ```
 
-Jangan commit `.env` atau kredensial. Jalankan migrasi satu kali setelah project Vercel terhubung dan environment Production tersedia:
+Ambil S3 access key, secret key, endpoint, dan region dari **Project Settings → Storage → S3 Connection** di Supabase. S3 access key Supabase memberi akses server-side ke semua bucket, jadi simpan hanya sebagai Vercel environment variables. Upload file JPG di `storage/app/public/packages/` ke bucket `isiin-public` dengan prefix `packages/`.
+
+Jangan commit `.env` atau kredensial. Aktifkan ekstensi PHP `pdo_pgsql` pada PHP CLI lokal, lalu jalankan migrasi satu kali setelah project Vercel terhubung dan environment Production tersedia:
 
 ```sh
 vercel link
@@ -126,7 +128,7 @@ vercel env run -e production -- php artisan migrate --force
 
 Jika ingin mengisi data demo, unggah file JPG di `storage/app/public/packages/` ke bucket publik dengan prefix `packages/`. Atur `DEMO_SEED_PASSWORD` dengan password acak minimal 16 karakter, lalu jalankan `vercel env run -e production -- php artisan db:seed --force`. Semua akun demo memakai password tersebut; jangan gunakan password bawaan `password` pada URL publik.
 
-Setelah domain Vercel aktif, set **Payment Notification URL** Midtrans ke `https://<domain-vercel>/midtrans/notifications`.
+Set `APP_URL` ke domain production Vercel, misalnya `https://isiin-app.vercel.app`. Di Midtrans Sandbox, set **Payment Notification URL** ke `https://<domain-vercel>/midtrans/notifications` dan **Finish Redirect URL** ke domain production Vercel. Notification URL adalah webhook server-to-server; Finish Redirect URL adalah tujuan customer setelah pembayaran. Jika transaksi Snap lama masih memakai URL ngrok, mulai transaksi pembayaran baru setelah environment Vercel diperbarui.
 
 ## Pengambilan furniture
 
