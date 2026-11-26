@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class PortfolioProject extends Model
 {
@@ -21,16 +22,16 @@ class PortfolioProject extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+        return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
     }
 
     public function getBeforeImageUrlAttribute(): ?string
     {
-        return $this->before_image_path ? asset('storage/' . $this->before_image_path) : null;
+        return $this->before_image_path ? Storage::disk('public')->url($this->before_image_path) : null;
     }
 
     public function getAfterImageUrlAttribute(): ?string
     {
-        return $this->after_image_path ? asset('storage/' . $this->after_image_path) : null;
+        return $this->after_image_path ? Storage::disk('public')->url($this->after_image_path) : null;
     }
 }

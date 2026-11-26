@@ -80,6 +80,54 @@ Pembayaran menggunakan Midtrans Snap mode redirect. Server membuat transaksi Sna
 
 Webhook memverifikasi signature, mata uang, dan nominal sebelum mengubah status order. Redirect dari browser tidak dianggap bukti pembayaran.
 
+## Deploy demo ke Vercel
+
+Aplikasi Laravel ini dijalankan sebagai container melalui [Vercel Container Runtime](https://vercel.com/docs/functions/runtimes/container). Root `Dockerfile` mengatur Apache sebagai web server. Pilih preset **Container** saat membuat project jika Vercel tidak mendeteksinya otomatis.
+
+Gunakan PostgreSQL terkelola untuk database (jangan SQLite pada filesystem Vercel), dan dua bucket Cloudflare R2: satu bucket publik untuk foto paket/portofolio dan satu bucket privat untuk foto pesanan/bukti sengketa. Aktifkan public URL hanya pada bucket publik. Berkas privat dibaca lewat route Laravel yang memeriksa autentikasi dan izin akses.
+
+Atur environment variables di Vercel:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:<hasil php artisan key:generate --show>
+APP_URL=https://<domain-vercel>
+APP_DISPLAY_TIMEZONE=Asia/Jakarta
+DB_CONNECTION=pgsql
+DB_URL=<connection URL PostgreSQL>
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=sync
+LOG_CHANNEL=stderr
+
+MIDTRANS_SERVER_KEY=<Sandbox Server Key>
+MIDTRANS_SIGNATURE_KEY=<Sandbox Signature Key>
+MIDTRANS_IS_PRODUCTION=false
+
+PUBLIC_FILESYSTEM_DRIVER=s3
+PRIVATE_FILESYSTEM_DRIVER=s3
+AWS_ACCESS_KEY_ID=<R2 access key>
+AWS_SECRET_ACCESS_KEY=<R2 secret key>
+AWS_DEFAULT_REGION=auto
+AWS_BUCKET=<nama bucket publik>
+AWS_PRIVATE_BUCKET=<nama bucket privat>
+AWS_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+AWS_URL=https://<public-bucket-url>
+AWS_USE_PATH_STYLE_ENDPOINT=true
+```
+
+Jangan commit `.env` atau kredensial. Jalankan migrasi satu kali setelah project Vercel terhubung dan environment Production tersedia:
+
+```sh
+vercel link
+vercel env run -e production -- php artisan migrate --force
+```
+
+Jika ingin mengisi data demo, unggah file JPG di `storage/app/public/packages/` ke bucket publik dengan prefix `packages/`. Atur `DEMO_SEED_PASSWORD` dengan password acak minimal 16 karakter, lalu jalankan `vercel env run -e production -- php artisan db:seed --force`. Semua akun demo memakai password tersebut; jangan gunakan password bawaan `password` pada URL publik.
+
+Setelah domain Vercel aktif, set **Payment Notification URL** Midtrans ke `https://<domain-vercel>/midtrans/notifications`.
+
 ## Pengambilan furniture
 
 Customer dapat mengonfirmasi permintaan pengambilan lebih awal dari detail pesanan saat statusnya masih dalam masa sewa. Vendor tidak perlu menyetujui permintaan tersebut; setelah furniture benar-benar diambil, vendor menandai pesanan selesai. Jika customer tidak meminta lebih awal, pesanan otomatis masuk status **Menunggu pengambilan** sehari setelah tanggal akhir sewa.

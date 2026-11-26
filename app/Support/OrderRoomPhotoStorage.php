@@ -6,6 +6,7 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class OrderRoomPhotoStorage
@@ -47,23 +48,13 @@ class OrderRoomPhotoStorage
         }
     }
 
-    public function response(string $path)
+    public function response(string $path): StreamedResponse
     {
-        $disk = $this->disk();
-        abort_unless($disk->exists($path), 404);
-
-        return response()->file($disk->path($path), [
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return PrivateFileResponse::stream($this->disk(), $path);
     }
 
     private function disk(): Filesystem
     {
-        return Storage::build([
-            'driver' => 'local',
-            'root' => storage_path('app/private'),
-            'throw' => true,
-        ]);
+        return Storage::disk('private');
     }
 }

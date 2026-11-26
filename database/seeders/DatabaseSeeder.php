@@ -13,16 +13,22 @@ use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // All demo accounts use "password".
+        $demoPassword = env('DEMO_SEED_PASSWORD');
+        if (app()->environment('production') && (! is_string($demoPassword) || strlen($demoPassword) < 16)) {
+            throw new RuntimeException('Set DEMO_SEED_PASSWORD to at least 16 characters before seeding production.');
+        }
+        $demoPassword = is_string($demoPassword) && $demoPassword !== '' ? $demoPassword : 'password';
+
         $admin = $this->seedUser([
             'name' => 'Admin Isiin',
             'email' => 'admin@isiin.test',
-            'password' => 'password',
+            'password' => $demoPassword,
             'role' => 'admin',
         ]);
 
@@ -31,21 +37,21 @@ class DatabaseSeeder extends Seeder
                 'name' => 'FurniStyle',
                 'email' => 'vendor@isiin.test',
                 'phone' => '081234567890',
-                'password' => 'password',
+                'password' => $demoPassword,
                 'role' => 'vendor',
             ]),
             'ruangrapi' => $this->seedUser([
                 'name' => 'Nadia Putri',
                 'email' => 'vendor2@isiin.test',
                 'phone' => '081298765432',
-                'password' => 'password',
+                'password' => $demoPassword,
                 'role' => 'vendor',
             ]),
             'belumverifikasi' => $this->seedUser([
                 'name' => 'Dimas Pratama',
                 'email' => 'vendor.pending@isiin.test',
                 'phone' => '081377788899',
-                'password' => 'password',
+                'password' => $demoPassword,
                 'role' => 'vendor',
             ]),
         ];
@@ -76,21 +82,21 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Alex Tan',
                 'email' => 'customer@isiin.test',
                 'phone' => '081200001111',
-                'password' => 'password',
+                'password' => $demoPassword,
                 'role' => 'customer',
             ]),
             'maya' => $this->seedUser([
                 'name' => 'Maya Putri',
                 'email' => 'maya@isiin.test',
                 'phone' => '081200002222',
-                'password' => 'password',
+                'password' => $demoPassword,
                 'role' => 'customer',
             ]),
             'budi' => $this->seedUser([
                 'name' => 'Budi Santoso',
                 'email' => 'budi@isiin.test',
                 'phone' => '081200003333',
-                'password' => 'password',
+                'password' => $demoPassword,
                 'role' => 'customer',
             ]),
         ];
