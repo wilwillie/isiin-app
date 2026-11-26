@@ -3,12 +3,16 @@
 @section('title', 'Verifikasi Vendor')
 
 @section('content')
-    <h1 class="font-serif text-3xl">Verifikasi Vendor</h1>
-    <p class="text-ink/60 mt-1">Hanya paket dari vendor terverifikasi yang tampil di katalog publik.</p>
+    <div class="mb-6 sm:mb-8">
+        <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Administrasi</p>
+        <h1 class="page-heading mt-2">Verifikasi Vendor</h1>
+        <p class="page-subtitle">Tinjau status vendor yang dapat menampilkan paket di katalog.</p>
+    </div>
 
-    <div class="card mt-5 overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="text-left text-ink/60 border-b">
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[42rem] text-sm">
+            <thead class="bg-[#faf8f3] text-left text-ink/60">
                 <tr>
                     <th class="p-3">Vendor</th>
                     <th class="p-3">Kontak</th>
@@ -20,7 +24,7 @@
             </thead>
             <tbody>
                 @forelse ($vendors as $vendor)
-                    <tr class="border-b last:border-0">
+                    <tr class="border-t border-ink/5 transition hover:bg-[#fcfbf8]">
                         <td class="p-3 font-medium">{{ $vendor->business_name }}</td>
                         <td class="p-3">{{ $vendor->user->email }}@if ($vendor->user->phone)<br><span class="text-ink/60">{{ $vendor->user->phone }}</span>@endif</td>
                         <td class="p-3">{{ $vendor->city ?? '-' }}</td>
@@ -44,5 +48,6 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 @endsection

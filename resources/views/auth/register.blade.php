@@ -5,17 +5,21 @@
 @section('content')
     @php $role = old('role', $role ?? 'customer'); @endphp
 
-    <div class="max-w-md mx-auto card p-6">
-        <h1 class="font-serif text-2xl">Daftar Akun</h1>
-        <p class="text-sm text-ink/60 mt-1">Pilih tipe akun Anda.</p>
+    <div class="mx-auto max-w-2xl overflow-hidden rounded-3xl bg-white shadow-xl shadow-ink/10 ring-1 ring-ink/5">
+        <div class="bg-gradient-to-r from-[#172329] to-[#344037] px-5 py-6 text-white sm:px-8 sm:py-8">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-gold">Selamat datang</p>
+            <h1 class="mt-2 font-serif text-3xl sm:text-4xl">Buat akun Isiin</h1>
+            <p class="mt-2 text-sm leading-6 text-white/70">Pilih jenis akun untuk memulai.</p>
+        </div>
+        <div class="p-5 sm:p-8">
 
-        <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
             <a href="{{ route('register', ['role' => 'customer']) }}"
-               class="rounded-lg border px-3 py-2 text-center {{ $role === 'customer' ? 'border-ink bg-ink text-white' : 'border-ink/20 bg-white' }}">
+               class="rounded-2xl border px-4 py-3 text-center font-medium transition {{ $role === 'customer' ? 'border-ink bg-ink text-white shadow-sm' : 'border-ink/10 bg-[#faf8f3] text-ink/70 hover:border-gold hover:bg-amber-50' }}">
                 Pemilik Properti
             </a>
             <a href="{{ route('register', ['role' => 'vendor']) }}"
-               class="rounded-lg border px-3 py-2 text-center {{ $role === 'vendor' ? 'border-ink bg-ink text-white' : 'border-ink/20 bg-white' }}">
+               class="rounded-2xl border px-4 py-3 text-center font-medium transition {{ $role === 'vendor' ? 'border-ink bg-ink text-white shadow-sm' : 'border-ink/10 bg-[#faf8f3] text-ink/70 hover:border-gold hover:bg-amber-50' }}">
                 Vendor
             </a>
         </div>
@@ -24,11 +28,11 @@
             @include('partials.errors')
         </div>
 
-        <form method="POST" action="{{ route('register') }}" class="space-y-4">
+        <form method="POST" action="{{ route('register') }}" class="mt-5 grid gap-4 sm:grid-cols-2">
             @csrf
             <input type="hidden" name="role" value="{{ $role }}">
 
-            <div>
+            <div class="sm:col-span-2">
                 <label class="label" for="name">Nama lengkap</label>
                 <input class="input" id="name" name="name" value="{{ old('name') }}" required>
             </div>
@@ -54,16 +58,23 @@
             </div>
             <div>
                 <label class="label" for="password">Password (minimal 8 karakter)</label>
-                <input class="input" id="password" type="password" name="password" required>
+                <div class="relative">
+                    <input class="input pr-12" id="password" type="password" name="password" autocomplete="new-password" required>
+                    @include('partials.password-toggle', ['inputId' => 'password'])
+                </div>
             </div>
-            <div>
+            <div class="sm:col-span-2">
                 <label class="label" for="password_confirmation">Ulangi password</label>
-                <input class="input" id="password_confirmation" type="password" name="password_confirmation" required>
+                <div class="relative">
+                    <input class="input pr-12" id="password_confirmation" type="password" name="password_confirmation" autocomplete="new-password" required>
+                    @include('partials.password-toggle', ['inputId' => 'password_confirmation'])
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-full">Daftar</button>
+            <button type="submit" class="btn btn-primary mt-1 w-full py-3 sm:col-span-2">Daftar <span class="ml-2" aria-hidden="true">→</span></button>
         </form>
 
-        <p class="text-sm text-center mt-4 text-ink/70">Sudah punya akun? <a class="underline" href="{{ route('login') }}">Masuk</a></p>
+        <p class="mt-5 text-center text-sm text-ink/65">Sudah punya akun? <a class="font-semibold text-amber-800 hover:underline" href="{{ route('login') }}">Masuk</a></p>
+        </div>
     </div>
 @endsection

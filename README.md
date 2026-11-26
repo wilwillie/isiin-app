@@ -54,6 +54,42 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
+## Midtrans Sandbox
+
+Pembayaran menggunakan Midtrans Snap mode redirect. Server membuat transaksi Snap, customer menyelesaikan pembayaran di halaman Midtrans, lalu status pesanan hanya berubah menjadi `paid` setelah webhook Midtrans tervalidasi.
+
+1. Ambil **Sandbox Server Key** dan **Signature Secret Key** dari Midtrans Dashboard Sandbox → **Settings → Access Keys → General Credentials**. Keduanya berbeda: Server Key untuk request API, Signature Secret Key untuk verifikasi notifikasi.
+2. Isi `.env` (jangan commit key):
+
+   ```dotenv
+   MIDTRANS_SERVER_KEY=SB-Mid-server-...
+   MIDTRANS_SIGNATURE_KEY=...
+   MIDTRANS_IS_PRODUCTION=false
+   APP_URL=http://127.0.0.1:8000
+   ```
+
+3. Jalankan migrasi dan bersihkan cache konfigurasi:
+
+   ```sh
+   php artisan migrate
+   php artisan config:clear
+   ```
+
+4. Jalankan aplikasi, lalu atur **Payment Notification URL** di dashboard ke `https://<domain-publik>/midtrans/notifications`. Midtrans perlu mengakses URL publik; untuk pengembangan lokal, expose port aplikasi dengan tunnel seperti ngrok. Atur juga Finish Redirect URL di Snap Preferences agar customer kembali ke aplikasi setelah checkout.
+5. Login sebagai customer, buka pesanan yang sudah dikonfirmasi vendor, lalu pilih **Bayar via Midtrans**. Pembayaran uji kartu Sandbox dapat memakai nomor `4811 1111 1111 1114`, CVV `123`, tanggal kedaluwarsa masa depan, dan OTP `112233`.
+
+Webhook memverifikasi signature, mata uang, dan nominal sebelum mengubah status order. Redirect dari browser tidak dianggap bukti pembayaran.
+
+## Pengambilan furniture
+
+Customer dapat mengonfirmasi permintaan pengambilan lebih awal dari detail pesanan saat statusnya masih dalam masa sewa. Vendor tidak perlu menyetujui permintaan tersebut; setelah furniture benar-benar diambil, vendor menandai pesanan selesai. Jika customer tidak meminta lebih awal, pesanan otomatis masuk status **Menunggu pengambilan** sehari setelah tanggal akhir sewa.
+
+Jalankan scheduler Laravel agar perpindahan otomatis aktif. Untuk pengembangan lokal, jalankan `php artisan schedule:work` di terminal terpisah. Scheduler memeriksa pesanan setiap hari pukul 00:05 menurut zona waktu `APP_DISPLAY_TIMEZONE` (default `Asia/Jakarta`). Di production, jalankan `php artisan schedule:run` setiap menit melalui cron atau Windows Task Scheduler.
+
+## Prototype aplikasi mobile
+
+Badge Google Play dan App Store pada halaman utama membuka prototype interaktif di `/prototype/aplikasi`. Prototype mencakup katalog, detail paket, formulir booking demo, simulasi pembayaran, dan status pesanan. Data paket hanya contoh; prototype ini tidak membuat pesanan atau memproses pembayaran sungguhan.
+
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

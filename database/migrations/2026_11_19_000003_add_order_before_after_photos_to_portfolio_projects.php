@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('portfolio_projects', function (Blueprint $table) {
+            $table->foreignId('order_id')->nullable()->unique()->constrained()->nullOnDelete();
+            $table->string('before_image_path')->nullable();
+            $table->string('after_image_path')->nullable();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('portfolio_projects', function (Blueprint $table) {
+            $table->dropForeign(['order_id']);
+            $table->dropUnique(['order_id']);
+            $table->dropColumn(['order_id', 'before_image_path', 'after_image_path']);
+        });
+    }
+};

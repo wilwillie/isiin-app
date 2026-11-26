@@ -14,7 +14,7 @@ class ReviewController extends Controller
     {
         abort_unless($order->customer_id === Auth::id(), 403);
 
-        if ($order->status !== 'completed' || $order->review()->exists()) {
+        if ($order->status !== 'completed' || $order->review()->exists() || $order->disputes()->where('status', 'open')->exists()) {
             return back()->with('error', 'Ulasan tidak bisa dikirim untuk pesanan ini.');
         }
 

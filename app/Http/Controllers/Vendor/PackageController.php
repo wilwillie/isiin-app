@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Vendor;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Vendor;
+use App\Support\PublicImageStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -62,15 +62,15 @@ class PackageController extends Controller
         $data = $request->validate($this->rules());
 
         $payload = $this->payload($request, $data);
+        $oldImage = null;
         if ($request->hasFile('image')) {
-            if ($package->image_path) {
-                Storage::disk('public')->delete($package->image_path);
-            }
+            $oldImage = $package->image_path;
             $payload['image_path'] = $request->file('image')->store('packages', 'public');
         }
 
         $package->update($payload);
         $this->syncItems($package, $data['items'] ?? null);
+        PublicImageStorage::deleteIfUnreferenced([$oldImage]);
 
         return redirect()->route('vendor.packages.index')->with('success', 'Paket diperbarui.');
     }
@@ -86,10 +86,9 @@ class PackageController extends Controller
             return back()->with('success', 'Paket sudah punya pesanan, jadi dinonaktifkan (tidak dihapus).');
         }
 
-        if ($package->image_path) {
-            Storage::disk('public')->delete($package->image_path);
-        }
+        $imagePath = $package->image_path;
         $package->delete();
+        PublicImageStorage::deleteIfUnreferenced([$imagePath]);
 
         return back()->with('success', 'Paket dihapus.');
     }
@@ -118,7 +117,8 @@ class PackageController extends Controller
             'duration_days'    => ['required', 'integer', 'between:1,365'],
             'delivery_fee'     => ['nullable', 'integer', 'min:0'],
             'installation_fee' => ['nullable', 'integer', 'min:0'],
-            'deposit'          => ['nullable', 'integer', 'min:0'],
+            'minimum_room_length' => ['nullable', 'required_with:minimum_room_width', 'numeric', 'between:0.1,1000', 'decimal:0,2'],
+            'minimum_room_width' => ['nullable', 'required_with:minimum_room_length', 'numeric', 'between:0.1,1000', 'decimal:0,2'],
             'image'            => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'items'            => ['nullable', 'string', 'max:3000'],
         ];
@@ -126,10 +126,12 @@ class PackageController extends Controller
 
     private function payload(Request $request, array $data): array
     {
-        $payload = Arr::only($data, ['name', 'description', 'room_type', 'style', 'price', 'duration_days']);
+        $payload = Arr::only($data, [
+            'name', 'description', 'room_type', 'style', 'price', 'duration_days',
+            'minimum_room_length', 'minimum_room_width',
+        ]);
         $payload['delivery_fee'] = (int) ($data['delivery_fee'] ?? 0);
         $payload['installation_fee'] = (int) ($data['installation_fee'] ?? 0);
-        $payload['deposit'] = (int) ($data['deposit'] ?? 0);
         $payload['is_active'] = $request->boolean('is_active');
 
         return $payload;

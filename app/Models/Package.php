@@ -11,7 +11,8 @@ class Package extends Model
 {
     protected $fillable = [
         'vendor_id', 'name', 'description', 'room_type', 'style', 'price', 'duration_days',
-        'delivery_fee', 'installation_fee', 'deposit', 'image_path', 'is_active',
+        'delivery_fee', 'installation_fee', 'minimum_room_length', 'minimum_room_width',
+        'image_path', 'is_active',
     ];
 
     protected $casts = ['is_active' => 'boolean'];

@@ -30,6 +30,12 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->user()->isVendor()) {
+            $request->session()->forget('url.intended');
+
+            return redirect()->route('vendor.dashboard');
+        }
+
         return redirect()->intended($this->homeFor($request->user()));
     }
 
@@ -94,7 +100,7 @@ class AuthController extends Controller
     private function homeFor(User $user): string
     {
         return match (true) {
-            $user->isAdmin()  => route('admin.vendors.index'),
+            $user->isAdmin()  => route('admin.dashboard'),
             $user->isVendor() => route('vendor.dashboard'),
             default           => route('packages.index'),
         };

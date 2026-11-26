@@ -25,7 +25,7 @@ class PackageController extends Controller
 
     public function show(Package $package)
     {
-        abort_unless($package->is_active && $package->vendor->is_verified, 404);
+        abort_unless($package->is_active && $package->vendor?->is_verified, 404);
 
         $package->load(['vendor', 'items', 'reviews.customer']);
 

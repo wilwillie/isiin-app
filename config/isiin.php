@@ -1,7 +1,9 @@
 <?php
 
 return [
-    // Komisi Isiin dari nilai sewa (10%). Ubah sesuai model bisnis.
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Asia/Jakarta'),
+
+    // Komisi Isiin dari total biaya layanan (sewa, pengiriman, pemasangan).
     'commission_rate' => 0.10,
 
     'room_types' => [
